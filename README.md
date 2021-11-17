@@ -1,2 +1,2 @@
 # braid
-Archive science papers and pay for peer review
+Archive science papers on IPFS , search for them, and comment
