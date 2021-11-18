@@ -1,14 +1,17 @@
 <script>
 	import { onMount } from "svelte";
 	import auth from "./authService";
-	import { isAuthenticated, user, user_tasks, tasks } from "./store";
+	import { isAuthenticated, user, user_tasks, tasks, searchResults, idIncrement } from "./store";
 	import TaskItem from "./components/TaskItem.svelte";
+	import SearchResult from "./components/SearchResult.svelte";
   
 	let auth0Client;
 	let newTask;
 	let isLoading = true;
-	
-  
+	let searching = false;
+	let searchKeyword;
+	let resultscontainer;
+
 	onMount(async () => {
 		// user.name.set("loading");
 		// user.email.set("...");
@@ -29,6 +32,59 @@
   
 	function logout() {
 	  auth.logout(auth0Client);
+	}
+
+	function search(){
+		var l = $searchResults.length;	// get our current items list count
+		$idIncrement = l
+
+		searching = true;
+		console.log("searching");
+		console.log(searchKeyword);
+
+		// TODO: Add actual search
+		let searchResult = {
+			"CID": "12345", 
+			"PaperCID": "23456",
+			"Title": "The title of the paper",
+			"Author": "The author of the paper",
+			"FileName": "file.pdf",
+			"Comments": [
+				{
+					"CommentID": "The id of the comment",
+					"Comment": "The comment",
+					"Author": "The author of the comment",
+					"Date": "The date of the comment",
+					"Time": "The time of the comment"
+				},
+				{
+					"CommentID": "The id of the comment",
+					"Comment": "The comment",
+					"Author": "The author of the comment",
+					"Date": "The date of the comment",
+					"Time": "The time of the comment"
+				}
+			],
+				"old-versions": [
+						{
+							"version": 1,
+							"CID": "xyz"
+						},
+						{
+							"version": 2,
+							"CID": "abc"
+						} 
+				],
+			"Favorites": "0",
+			"Views": 1,
+			"special_verification": "1",
+			"current_version": 3
+		};
+
+		$searchResults[l] = searchResult;
+		// $searchResults.push(searchResult);
+		console.log($searchResults);
+
 	}
   
 	function addItem() {
@@ -59,15 +115,43 @@
   </script>
 
 <style>
+	nav{
+		background-color: #1A4F7E;
+		color: white;
+	}
+
+	nav a{
+		color: #ccc;
+		transition: 250ms;
+	}
+
+	nav a:hover{
+		color: #fff;
+		text-decoration: none;
+	}
 	#main-application {
 	  margin-top: 50px;
+	}
+
+	/* .full-height-container{
+		height: 100vh;
+	} */
+
+	.bottom-page-row {
+		margin-bottom: 25px;
+		margin-top: 25px;
+	}
+
+	.container{
+		/* display: flex; */
 	}
 </style>
 
 <main>
 	<!-- App Bar -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-	  <a class="navbar-brand" href="/#">Task Manager</a>
+	
+	<nav class="navbar navbar-expand-lg"> <!-- navbar-dark bg-dark -->
+	  <a class="navbar-brand" href="/#">Braid</a>
 	  <button
 		class="navbar-toggler"
 		type="button"
@@ -105,29 +189,58 @@
 		<div class="loader"></div>
 	{:else}
 	<!-- Application -->
+	<!-- if not authenticated -->
 	{#if !$isAuthenticated}
-	<div class="container mt-5">
+	<div class="container mt-5 full-height-container" style="overflow: hidden;">
 	  <div class="row">
 		<div class="col-md-10 offset-md-1">
 		  <div class="jumbotron">
-			<h1 class="display-4">Task Management made Easy!</h1>
-			<p class="lead">Instructions</p>
-			<ul>
-			  <li>Login to start &#128272;</li>
-			  <li>Create Tasks &#128221;</li>
-			  <li>Tick off completed tasks &#9989;</li>
-			</ul>
-			<a
-			  class="btn btn-primary btn-lg mr-auto ml-auto"
-			  href="/#"
-			  role="button"
-			  on:click="{login}"
-			  >Log In</a
-			>
+			<h1 class="display-4">Braid paper search</h1>
+			<input
+				class="form-control"
+				bind:value="{searchKeyword}"
+				placeholder="Search for something"
+			/>
+			<button class="btn btn-primary mt-3" on:click="{search}">
+			  Search
+			</button>
+			<a href="#" >Advanced...</a>
 		  </div>
 		</div>
 	  </div>
+	  {#if searching}
+	  <div bind:this={resultscontainer} class="row">
+		<div class="col-md-10 offset-md-1">
+			<div class="jumbotron">
+				{#each $searchResults as result}
+				<SearchResult searchResult="{result}" />
+				{/each}
+			</div>
+		</div>
+	  </div>
+	  {/if}
+	  <div class="row bottom-page-row">
+		<!-- <row class="row"> -->
+			<div class="col-md-3 offset-md-1">
+				<div class="jumbotron">
+					<h1>IPFS</h1>
+				</div>
+			</div>
+			<div class="col-md-3 offset-md-4">
+			<!-- create a button -->
+			<button
+				class="btn btn-primary btn-lg btn-block"
+				on:click="{login}"
+				>Login</button>
+			<button
+				class="btn btn-primary btn-lg btn-block"
+				on:click="{login}"
+				>Upload</button>
+			</div>
+		<!-- </row> -->
+		</div>
 	</div>
+	<!-- if is authenticated -->
 	{:else}
 	<div class="container" id="main-application">
 	  <div class="row">
