@@ -94,6 +94,6 @@ try {
 
     module.exports = exports = new braidOrbit(Ipfs, OrbitDB)
 } catch (e) {
-    window.NPP = new braidOrbit(window.Ipfs, window.OrbitDB)
+    window.BO = new braidOrbit(window.Ipfs, window.OrbitDB)
 }
 
