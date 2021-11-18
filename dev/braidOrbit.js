@@ -56,19 +56,19 @@ class braidOrbit {
     }
 
     getPaperByAuthor(author) {
-        return this.pieces.query((paper) => paper.author === author)
+        return this.papers.query((papers) => papers.author === author)
     }
 
     getPaperByTitle(title) {
-        return this.pieces.query((paper) => paper.title === title)
+        return this.papers.query((papers) => papers.title === title)
     }
 
     getPaperByDate(date) {
-        return this.pieces.query((paper) => paper.date === date)
+        return this.papers.query((papers) => papers.date === date)
     }
 
     getPaperByDoi(doi) {
-        return this.pieces.query((paper) => paper.doi === doi)
+        return this.papers.query((papers) => papers.doi === doi)
     }
 
     async updatePaperByHash (hash, author, title, date, doi) {
