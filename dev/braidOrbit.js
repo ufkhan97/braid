@@ -19,6 +19,7 @@ class braidOrbit {
     }
 
     async _init () {
+        const peerInfo = await this.node.id()
         this.orbitdb = await this.OrbitDB.createInstance(this.node)
         this.defaultOptions = { accessController: {
             write: [this.orbitdb.identity.id]
@@ -31,6 +32,16 @@ class braidOrbit {
         this.papers = await this.orbitdb.docstore('papers', docStoreOptions)
         await this.papers.load()
 
+        this.user = await this.orbitdb.kvstore('user', this.defaultOptions)
+        await this.user.load()
+        await this.user.set('papers', this.papers.id)
+
+        await this.loadFixtureData({
+            'username': Math.floor(Math.random() * 1000000),
+            'papers': this.papers.id,
+            'nodeId': peerInfo.id
+        })
+
         this.onready()
     }
  
@@ -41,9 +52,29 @@ class braidOrbit {
             return
         }
 
-        const cid = await this.papers.put({ hash, author, title, date, doi})
+        const dbName = 'counter.' + hash.substr(20,20)
+        const counter = await this.orbitdb.counter(dbName, this.defaultOptions)
+
+        const cid = await this.papers.put({ hash, author, title, date, doi
+            counter: counter.id
+        })
+
         return cid
     }
+
+    async getPaperCount (paper) {
+        const counter = await.this.orbitdb.counter(paper.counter)
+        await counter.load()
+        return counter.value
+    }
+
+    async incrementPaperCounter (paper) {
+        const counter = await this.orbitdb.counter(paper.counter)
+        await counter.load()
+        const cid = await counter.inc()
+        return cid
+    }
+
 
     getAllPapers() {
         const papers = this.papers.get('')
@@ -84,6 +115,32 @@ class braidOrbit {
     async deletePaperByHash (hash) {
         const cid = await this.paper.del(hash)
         return cid
+    }
+
+    async deleteProfileField (key) {
+        const cid = await this.user.del(key)
+        return cid
+    }
+
+    getAllProfileFields () {
+        return this.user.all;
+    }
+
+    getProfileField (key) {
+        return this.user.get(key)
+    }
+
+    async updateProfileField (key, value) {
+        const cid = await this.user.set(key, value)
+        return cid
+    }
+
+    async loadFixtureData (fixtureData) {
+        const fixtureKeys = Object.keys(fixtureData)
+        for (let i in fixtureKeys) {
+            let key = fixtureKeys[i]
+            if(!this.user.get(key)) await this.user.set(key, fixtureData[key])
+        }
     }
 
 }
