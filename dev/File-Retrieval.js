@@ -1,51 +1,57 @@
 import { Web3Storage, getFilesFromPath } from 'web3.storage'
 
 
-async function checkCID(cid) {
+async function File_Retrieval(cid, filename) {
+    console.log(`CID: ${cid} Filename: ${filename}`)
     const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDBhNjhBMkNhMUVGZDBiQzUzZDI1ZDU1MWE3YUYwRTM0NzQ4OTdFMkMiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2MzcwMjEyNjkzOTAsIm5hbWUiOiJCcmFpZFRlc3RUb2tlbiJ9.uqd9FiMCE5IGfXa4vrciA01bXL3a3AyfuTDp1jmKovU'
     const storage = new Web3Storage({ token }) // Instanciates connection to web3 storage by providing token
+    var retrieved_filename
+    var url
 
-    // Still working through this logic -- need to beable to pull down the filename using the provideed CID
-    const res1 = await storage.get(cid)
-    const files = await res1.files()
-    console.log(`Got a response! [${files.status}] ${files.name}`)
-    if (!res1.ok) {
-        throw new Error(`failed to get ${cid}`)
-    }
-//NEED TO FIGURE OUT HOW TO GET FILE NAME OR URL OR JUST PASS STRING WITH AREA FOR FILENAME
+    const conn = await storage.get(cid)
+    
+    // If CID is valid
+    if (conn.ok) {
+        console.log(`Validated ${cid}!`)
 
-    var res
-    try {
-        const status = await storage.status(cid)
-        console.error(status.name)
-        res = true
+        // Get filename from ipfs
+        const files = await conn.files()
+        for (const file of files) {
+            // console.log(`Retrieved information: ${file.cid} ${file.name} ${file.size}`)
+            retrieved_filename = file.name
+        }
+
+        // Check to see if passed in filename and pulled down filename match
+        if (filename === retrieved_filename) {
+            console.log('CID & Filename check complete -- SUCCESS')
+            url = `${cid}.ipfs.dweb.link/${filename}`
+        }
+        else{
+            console.error('Passed in filename does not match')
+        }
+
+        //console.error(filename)
+        //console.error(retrieved_filename)   
     }
-    catch {
-        //[system.exception]
-        console.error('CID is not valid')
-        res = false
+
+    else {
+        console.error(`Failed to get ${cid}`)
+        console.error('CID & Filename check complete -- FAILURE')
     }
-    return res
+
+    return url
   }
 
-  
-// not sure if we want to pull retreive file using only cid or using both cid and filename... 
-// need to discuss how user will search for file
+// TEST CASES
 
-async function fileRetrieval(cid, filename) {
-    console.log(`input file: ${cid} output name: ${filename}`)
-    const validCID = await checkCID(cid).then(console.error)
-    if (validCID ==true) {
-        console.log('worked')
-    }
-    else {
-        console.log('failed')
-    }
-    // check if filename exists
-    // check if cid and filename match
+// WORKS -- valid cid, valid filename
+const ouputURL1 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test-file.txt').then(console.log)
 
-    return (`${cid}.ipfs.dweb.link/${filename}`)
-}
+// DOES NOT WORK -- valid cid, invalid filename
+const ouputURL2 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test.txt').then(console.log)
 
+// DOES NOT WORK -- invalid cid, valid filename
+const ouputURL3 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test-file.txt').then(console.log)
 
-const url = await fileRetrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test').then(console.log)
+// DOES NOT WORK -- invalid cid, invalid filename
+const ouputURL4 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test.txt').then(console.log)
