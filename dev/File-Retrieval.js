@@ -29,9 +29,6 @@ async function File_Retrieval(cid, filename) {
         else{
             console.error('Passed in filename does not match')
         }
-
-        //console.error(filename)
-        //console.error(retrieved_filename)   
     }
 
     else {
