@@ -11,30 +11,45 @@
 	import Dialog from "./components/Dialog.svelte"
 	import { File_Retrieval } from "./components/File-Retrieval.js"
 
-	// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
-
-	// const Ipfs = require('ipfs')
-    // const OrbitDB = require('orbit-db')
-
-    // module.exports = exports = new braidOrbit(Ipfs, OrbitDB)
-
-	// const BO = require('./components/BraidOrbit.js')
-
+  
+	let auth0Client;
+	let newTask;
+	let isLoading = true;
+	let searching = false;
+	let searchKeyword;
+	let resultscontainer;
 	let odbready = false;
 	let ipfsready = false;
     let mounted = false;
+	// let filename = "covidcough.pdf";
 
-	onMount(() => {
-		// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
-            // The payment-form is ready.
-            mounted = true;
-            if (ipfsready && odbready) {
-				// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
-				// const BO = require('./components/BraidOrbit.js')
-				loadBO();
-            }
-        });
- 
+	onMount(async () => {
+		// user.name.set("loading");
+		// user.email.set("...");
+
+	  auth0Client = await auth.createClient();
+  
+	  isAuthenticated.set(await auth0Client.isAuthenticated());
+	  user.set(await auth0Client.getUser());
+
+
+		mounted = true;
+		if (ipfsready && odbready) {
+			loadBO();
+		}
+
+	  isLoading = false;
+	});
+  
+	function login() {
+	  auth.loginWithPopup(auth0Client);
+	}
+  
+	function logout() {
+	  auth.logout(auth0Client);
+	}
+
+	 
 	function ipfsLoaded() {
 		// The external Stripe javascript is ready.
 		ipfsready = true;
@@ -55,97 +70,29 @@
 		}
 	}
 
-	function loadBO() {
+	async function loadBO() {
 		// Time for Stripe.js to do its magic.
 		// const stripe = tripe('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
 		// var elements = stripe.elements();
 		// etc..
 
-		const BO = require('./components/BraidOrbit.js')
+		// import braid orbitdb
+		const BO = require('./components/braidOrbit.js')
+
+		// console.log(BO)
+
+		//define onready function
 		BO.onready = () => {
 			console.log(BO.orbitdb.id)	
 		}
 
+		//create db
 		BO.create()
 
-		// BO.onready = () => {
-		// 	console.log(BO.papers.id)
-		// }
-
-
-		// onsole.log(BO.orbitdb.id)	
-	}
-
-	//Console logging and instantiates OrbitDB 
-	// BO.onready = () => {
-	// 	console.log(BO.orbitdb.id)
-	// }
-
-	// BO.create()
-
-	// //Creating a database
-	// BO.onready = () => {
-	// console.log(BO.papers.id)
-	// }
-
-	// //Creating data 
-	// const cid = await BO.addNewPaper(hash, author, title, date, doi)
-	// const content = await BO.node.dag.get(IPFS.asCID(cid))
-	// console.log(content.value.payload)
-
-	// //Reading data
-	// papers = BO.getAllPapers()
-	// papers.forEach((paper) => { /* do something */ })
-
-	// paper = BO.getPaperByHash('hash')
-	// console.log(paper)
-
-	// //Updating data
-	// const cid = await BO.updatePaperByHash(hash, author, title, date, doi)
-	// // do stuff with the cid as above
-
-	// //Deleting data
-	// const cid = await BO.deletePaperByHash("QmNR2n4zywCV61MeMLB6JwPueAPqheqpfiA4fLPMxouEmQ")
-	// const content = await BO.node.dag.get(IPFS.asCID(cid))
-	// console.log(content.value.payload)
-
-	// //Uploading files and storing content hash
-	// document.getElementById("fileUpload").addEventListener('change', async (event) => {
-	// const file = event.target.files[0]
-	// if (file) {
-	// 	const result = await BO.node.add(file)
-	// 	const cid = await BO.addNewPaper(result[0].hash)
-	// }
-	// })
-  
-	let auth0Client;
-	let newTask;
-	let isLoading = true;
-	let searching = false;
-	let searchKeyword;
-	let resultscontainer;
-	// let filename = "covidcough.pdf";
-
-	onMount(async () => {
-		// user.name.set("loading");
-		// user.email.set("...");
-
-	  auth0Client = await auth.createClient();
-  
-	  isAuthenticated.set(await auth0Client.isAuthenticated());
-	  user.set(await auth0Client.getUser());
-
-	//   console.log("user" + user);
-
-	  isLoading = false;
-	});
-  
-	function login() {
-	  auth.loginWithPopup(auth0Client);
-	}
-  
-	function logout() {
-	  auth.logout(auth0Client);
+		//Creating papers database
+		BO.onready = () => {
+			console.log(BO.papers.id)
+		}
 	}
 
 	function search(){
@@ -200,49 +147,8 @@
 		console.log($searchResults);
 
 	}
-  
-	function addItem() {
-	  let newTaskObject = {
-		id: genRandom(),
-		description: newTask,
-		completed: false,
-		user: $user.email
-	  };
-  
-	  console.log(newTaskObject);
-  
-	  let updatedTasks = [...$tasks, newTaskObject];
-  
-	  tasks.set(updatedTasks);
-  
-	  newTask = "";
-	}
-  
-	function genRandom(length = 7) {
-	  var chars =
-		"0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-	  var result = "";
-	  for (var i = length; i > 0; --i)
-		result += chars[Math.round(Math.random() * (chars.length - 1))];
-	  return result;
-	}
-
-	// import { onMount } from 'svelte';
-
-	// let photos = [];
-
-	// onMount(async () => {
-	// 	// const res = await fetch(`https://jsonplaceholder.typicode.com/photos?_limit=20`);
-	// 	// photos = await res.json();
-
-	// 	BO.create()
-
-	// 	// BO.onready = () => {
-	// 	// 	console.log(BO.orbitdb.id)
-	// 	// }
 
 
-	// });
   </script>
 
 <style>
@@ -286,7 +192,8 @@
 	<!-- App Bar -->
 	
 	<nav class="navbar navbar-expand-lg"> <!-- navbar-dark bg-dark -->
-	  <a class="navbar-brand" href="/#">Braid</a>
+	  <a class="navbar-brand" href="/#">braid</a>
+	  <a class="navbar-brand" href="/#">discord</a>
 	  <button
 		class="navbar-toggler"
 		type="button"
@@ -330,7 +237,7 @@
 	  <div class="row">
 		<div class="col-md-10 offset-md-1">
 		  <div class="jumbotron">
-			<h1 class="display-4">Braid paper search</h1>
+			<h1 class="display-4">braid paper search</h1>
 			<input
 				class="form-control"
 				bind:value="{searchKeyword}"
@@ -362,8 +269,10 @@
 			{#each $uploads as upload}
 			<div class="card">
 				<div class="card-body">
-					{#await File_Retrieval(upload[0], upload[1]) then value}
-					<span>{upload[0]}</span>
+					{#await File_Retrieval(upload.hash, upload.filename) then value}
+					<span>CID: {upload.hash}</span>
+					<span>title: {upload.title}</span>
+					<span>Date Archived: {upload.date}</span>
 					<a href="https://{value}" class="btn btn-primary"></a>
 					{/await}
 				</div>
