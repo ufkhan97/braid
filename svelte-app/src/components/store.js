@@ -6,6 +6,7 @@ export const searchResults = writable([]);
 export const popupOpen = writable(false);
 export const error = writable();
 export const idIncrement = writable(0);
+export const uploads = writable([]);
 
 export const tasks = writable([]);
 

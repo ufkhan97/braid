@@ -1,3 +1,5 @@
+// let Ipfs, OrbitDB
+
 class braidOrbit {
     constructor (Ipfs, OrbitDB) {
         this.Ipfs = Ipfs
@@ -55,7 +57,7 @@ class braidOrbit {
         const dbName = 'counter.' + hash.substr(20,20)
         const counter = await this.orbitdb.counter(dbName, this.defaultOptions)
 
-        const cid = await this.papers.put({ hash, author, title, date, doi
+        const cid = await this.papers.put({ hash, author, title, date, doi,
             counter: counter.id
         })
 
@@ -63,7 +65,7 @@ class braidOrbit {
     }
 
     async getPaperCount (paper) {
-        const counter = await.this.orbitdb.counter(paper.counter)
+        const counter = await this.orbitdb.counter(paper.counter)
         await counter.load()
         return counter.value
     }
@@ -103,7 +105,7 @@ class braidOrbit {
     }
 
     async updatePaperByHash (hash, author, title, date, doi) {
-        const paper = await.this.getPaperByHash(hash)
+        const paper = await this.getPaperByHash(hash)
         paper.author = author
         paper.title = title
         paper.date = date
@@ -146,8 +148,8 @@ class braidOrbit {
 }
 
 try {
-    const Ipfs = require('ipfs')
-    const OrbitDB = require('orbit-db')
+    // const Ipfs = require('ipfs')
+    // const OrbitDB = require('orbit-db')
 
     module.exports = exports = new braidOrbit(Ipfs, OrbitDB)
 } catch (e) {

@@ -1,7 +1,7 @@
 import { Web3Storage, getFilesFromPath } from 'web3.storage'
 
 
-async function File_Retrieval(cid, filename) {
+export async function File_Retrieval(cid, filename) {
     console.log(`CID: ${cid} Filename: ${filename}`)
     const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDBhNjhBMkNhMUVGZDBiQzUzZDI1ZDU1MWE3YUYwRTM0NzQ4OTdFMkMiLCJpc3MiOiJ3ZWIzLXN0b3JhZ2UiLCJpYXQiOjE2MzcwMjEyNjkzOTAsIm5hbWUiOiJCcmFpZFRlc3RUb2tlbiJ9.uqd9FiMCE5IGfXa4vrciA01bXL3a3AyfuTDp1jmKovU'
     const storage = new Web3Storage({ token }) // Instanciates connection to web3 storage by providing token
@@ -42,13 +42,13 @@ async function File_Retrieval(cid, filename) {
 // TEST CASES
 
 // WORKS -- valid cid, valid filename
-const ouputURL1 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test-file.txt').then(console.log)
+// const ouputURL1 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test-file.txt').then(console.log)
 
-// DOES NOT WORK -- valid cid, invalid filename
-const ouputURL2 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test.txt').then(console.log)
+// // DOES NOT WORK -- valid cid, invalid filename
+// const ouputURL2 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4', 'test.txt').then(console.log)
 
-// DOES NOT WORK -- invalid cid, valid filename
-const ouputURL3 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test-file.txt').then(console.log)
+// // DOES NOT WORK -- invalid cid, valid filename
+// const ouputURL3 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test-file.txt').then(console.log)
 
-// DOES NOT WORK -- invalid cid, invalid filename
-const ouputURL4 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test.txt').then(console.log)
+// // DOES NOT WORK -- invalid cid, invalid filename
+// const ouputURL4 = await File_Retrieval('bafybeidcduhicfis45pnixjvcayb3guqs6xh7ylms4fnote2l27gqwhln4m', 'test.txt').then(console.log)

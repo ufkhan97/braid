@@ -1,9 +1,122 @@
+<svelte:head>
+	<script src="https://unpkg.com/ipfs@0.55.1/dist/index.min.js" on:load={ipfsLoaded}></script>
+	<script src="https://unpkg.com/orbit-db@0.26.1/dist/orbitdb.min.js" on:load={odbLoaded}></script>
+</svelte:head>
 <script>
 	import { onMount } from "svelte";
-	import auth from "./authService";
-	import { isAuthenticated, user, user_tasks, tasks, searchResults, idIncrement } from "./store";
+	import auth from "./authService.js";
+	import { isAuthenticated, user, user_tasks, tasks, searchResults, idIncrement, uploads } from "./components/store";
 	import TaskItem from "./components/TaskItem.svelte";
 	import SearchResult from "./components/SearchResult.svelte";
+	import Dialog from "./components/Dialog.svelte"
+	import { File_Retrieval } from "./components/File-Retrieval.js"
+
+	// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
+
+	// const Ipfs = require('ipfs')
+    // const OrbitDB = require('orbit-db')
+
+    // module.exports = exports = new braidOrbit(Ipfs, OrbitDB)
+
+	// const BO = require('./components/BraidOrbit.js')
+
+	let odbready = false;
+	let ipfsready = false;
+    let mounted = false;
+
+	onMount(() => {
+		// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
+            // The payment-form is ready.
+            mounted = true;
+            if (ipfsready && odbready) {
+				// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
+				// const BO = require('./components/BraidOrbit.js')
+				loadBO();
+            }
+        });
+ 
+	function ipfsLoaded() {
+		// The external Stripe javascript is ready.
+		ipfsready = true;
+		if (mounted && odbready) {
+			// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
+			// const BO = require('./components/BraidOrbit.js')
+			loadBO();
+		}
+	}
+
+	function odbLoaded() {
+		// The external Stripe javascript is ready.
+		odbready = true;
+		if (mounted && ipfsready) {
+			// import { BraidOrbit as BO } from "./components/BraidOrbit.js"
+			// const BO = require('./components/BraidOrbit.js')
+			loadBO();
+		}
+	}
+
+	function loadBO() {
+		// Time for Stripe.js to do its magic.
+		// const stripe = tripe('pk_test_6pRNASCoBOKtIshFeQd4XMUh');
+		// var elements = stripe.elements();
+		// etc..
+
+		const BO = require('./components/BraidOrbit.js')
+		BO.onready = () => {
+			console.log(BO.orbitdb.id)	
+		}
+
+		BO.create()
+
+		// BO.onready = () => {
+		// 	console.log(BO.papers.id)
+		// }
+
+
+		// onsole.log(BO.orbitdb.id)	
+	}
+
+	//Console logging and instantiates OrbitDB 
+	// BO.onready = () => {
+	// 	console.log(BO.orbitdb.id)
+	// }
+
+	// BO.create()
+
+	// //Creating a database
+	// BO.onready = () => {
+	// console.log(BO.papers.id)
+	// }
+
+	// //Creating data 
+	// const cid = await BO.addNewPaper(hash, author, title, date, doi)
+	// const content = await BO.node.dag.get(IPFS.asCID(cid))
+	// console.log(content.value.payload)
+
+	// //Reading data
+	// papers = BO.getAllPapers()
+	// papers.forEach((paper) => { /* do something */ })
+
+	// paper = BO.getPaperByHash('hash')
+	// console.log(paper)
+
+	// //Updating data
+	// const cid = await BO.updatePaperByHash(hash, author, title, date, doi)
+	// // do stuff with the cid as above
+
+	// //Deleting data
+	// const cid = await BO.deletePaperByHash("QmNR2n4zywCV61MeMLB6JwPueAPqheqpfiA4fLPMxouEmQ")
+	// const content = await BO.node.dag.get(IPFS.asCID(cid))
+	// console.log(content.value.payload)
+
+	// //Uploading files and storing content hash
+	// document.getElementById("fileUpload").addEventListener('change', async (event) => {
+	// const file = event.target.files[0]
+	// if (file) {
+	// 	const result = await BO.node.add(file)
+	// 	const cid = await BO.addNewPaper(result[0].hash)
+	// }
+	// })
   
 	let auth0Client;
 	let newTask;
@@ -11,6 +124,7 @@
 	let searching = false;
 	let searchKeyword;
 	let resultscontainer;
+	// let filename = "covidcough.pdf";
 
 	onMount(async () => {
 		// user.name.set("loading");
@@ -112,9 +226,30 @@
 		result += chars[Math.round(Math.random() * (chars.length - 1))];
 	  return result;
 	}
+
+	// import { onMount } from 'svelte';
+
+	// let photos = [];
+
+	// onMount(async () => {
+	// 	// const res = await fetch(`https://jsonplaceholder.typicode.com/photos?_limit=20`);
+	// 	// photos = await res.json();
+
+	// 	BO.create()
+
+	// 	// BO.onready = () => {
+	// 	// 	console.log(BO.orbitdb.id)
+	// 	// }
+
+
+	// });
   </script>
 
 <style>
+	/* body{
+		padding: 0px;
+	} */
+
 	nav{
 		background-color: #1A4F7E;
 		color: white;
@@ -185,12 +320,12 @@
 	  </div>
 	</nav>
   
-	{#if isLoading}
+	<!-- {#if isLoading}
 		<div class="loader"></div>
-	{:else}
+	{:else} -->
 	<!-- Application -->
 	<!-- if not authenticated -->
-	{#if !$isAuthenticated}
+	
 	<div class="container mt-5 full-height-container" style="overflow: hidden;">
 	  <div class="row">
 		<div class="col-md-10 offset-md-1">
@@ -219,6 +354,25 @@
 		</div>
 	  </div>
 	  {/if}
+	  {#if $uploads.length > 0}
+	  <div bind:this={resultscontainer} class="row">
+		<div class="col-md-10 offset-md-1">
+		  <div class="jumbotron">
+			<h1 class="display-4">My Uploads</h1>
+			{#each $uploads as upload}
+			<div class="card">
+				<div class="card-body">
+					{#await File_Retrieval(upload[0], upload[1]) then value}
+					<span>{upload[0]}</span>
+					<a href="https://{value}" class="btn btn-primary"></a>
+					{/await}
+				</div>
+			</div>
+			{/each}
+		  </div>
+		</div>
+	</div>
+	{/if}
 	  <div class="row bottom-page-row">
 		<!-- <row class="row"> -->
 			<div class="col-md-3 offset-md-1">
@@ -228,21 +382,26 @@
 			</div>
 			<div class="col-md-3 offset-md-4">
 			<!-- create a button -->
+			{#if !$isAuthenticated}
 			<button
 				class="btn btn-primary btn-lg btn-block"
 				on:click="{login}"
 				>Login</button>
+			{:else}
 			<button
 				class="btn btn-primary btn-lg btn-block"
-				on:click="{login}"
+				data-toggle="modal" data-target="#exampleModal"
 				>Upload</button>
+			<!-- <a href="#"  class="button button-1">Upload</a> -->
+			{/if}
 			</div>
 		<!-- </row> -->
 		</div>
+		<Dialog></Dialog>
 	</div>
 	<!-- if is authenticated -->
-	{:else}
-	<div class="container" id="main-application">
+	
+	<!-- <div class="container" id="main-application">
 	  <div class="row">
 		<div class="col-md-6">
 		  <ul class="list-group">
@@ -263,7 +422,6 @@
 		  </button>
 		</div>
 	  </div>
-	</div>
-	{/if}
-	{/if}
-  </main>
+	</div> -->
+	<!-- {/if} -->
+</main>
