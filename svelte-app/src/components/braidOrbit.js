@@ -143,8 +143,8 @@ class braidOrbit {
         const dbName = 'counter.' + hash.substr(20,20)
         const counter = await this.orbitdb.counter(dbName, this.defaultOptions)
 
-        const dbName = 'comments.' + hash.substr(20,20)
-        const comments = await this.orbitdb.comments(dbName, this.defaultOptions)
+        const commentdbName = 'comments.' + hash.substr(20,20)
+        const comments = await this.orbitdb.comments(commentdbName, this.defaultOptions)
 
         const cid = await this.papers.put({ hash, author, title, date, doi, version, field, tags, flags
             counter: counter.id, 
@@ -164,10 +164,10 @@ class braidOrbit {
         }
 
         const dbName = 'karma.' + hash.substr(20,20)
-        const karma = await this.orbitdb.karma(dbName, this.defaultOptions)
+        const counter = await this.orbitdb.counter(dbName, this.defaultOptions)
 
         const cid = await this.comments.put({ hash, author, paper, 
-        karma: karma.id
+        karma: counter.id
         })
 
         return cid
@@ -183,6 +183,26 @@ class braidOrbit {
         const counter = await this.orbitdb.counter(paper.counter)
         await counter.load()
         const cid = await counter.inc()
+        return cid
+    }
+
+    async getKarmaCount (comments) {
+        const karma = await this.orbitdb.counter(comments.karma)
+        await karma.load()
+        return karma.value
+    }
+
+    async incrementKarmaCounter (comments) {
+        const karma = await this.orbitdb.counter(comments.karma)
+        await karma.load()
+        const cid = await karma.inc()
+        return cid
+    }
+
+    async decrementKarmaCounter (comments) {
+        const karma = await this.orbitdb.counter(comments.karma)
+        await karma.load()
+        const cid = await karma.inc(-1)
         return cid
     }
 
