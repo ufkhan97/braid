@@ -42,6 +42,7 @@ class braidOrbit {
 
         this.comments = await this.orbitdb.docstore('comments', docStoreOptions)
         await this.comments.load()
+        await this.comments.set('karma', this.comments.id)
 
         this.braidPeers = await this.orbitdb.keyvalue('braidPeers', this.defaultOptions)
         await this.braidPeers.load()
@@ -153,6 +154,25 @@ class braidOrbit {
         return cid
     }
 
+    //Need to test if karma db is being initialized properly here
+
+    async addNewComment(hash, author, paper) {
+        const existingComment = this.getCommentByHash(hash)
+        if (existingComment) {
+            await this.updateCommentByHash(hash, author, paper)
+            return
+        }
+
+        const dbName = 'karma.' + hash.substr(20,20)
+        const karma = await this.orbitdb.karma(dbName, this.defaultOptions)
+
+        const cid = await this.comments.put({ hash, author, paper, 
+        karma: karma.id
+        })
+
+        return cid
+    }
+
     async getPaperCount (paper) {
         const counter = await this.orbitdb.counter(paper.counter)
         await counter.load()
@@ -255,6 +275,19 @@ class braidOrbit {
 
     async deleteProfileField (key) {
         const cid = await this.user.del(key)
+        return cid
+    }
+
+    async updateCommentByHash (hash, author, paper) {
+        const comment = await this.getCommentByHash(hash)
+        comment.author = author
+        comment.paper = paper
+        const cid = await this.comments.put(comment)
+        return cid
+    }
+
+    async deleteCommentByHash (hash) {
+        const cid = await this.paper.del(hash)
         return cid
     }
 
