@@ -38,6 +38,10 @@ class braidOrbit {
         this.user = await this.orbitdb.kvstore('user', this.defaultOptions)
         await this.user.load()
         await this.user.set('papers', this.papers.id)
+        await this.user.set('comments', this.comments.id)
+
+        this.comments = await this.orbitdb.docstore('comments', docStoreOptions)
+        await this.comments.load()
 
         this.braidPeers = await this.orbitdb.keyvalue('braidPeers', this.defaultOptions)
         await this.braidPeers.load()
@@ -62,7 +66,7 @@ class braidOrbit {
         return peers
     }
 
-    getBraidPeers () {
+    async getBraidPeers() {
         return this.braidPeers.all
     }
 
@@ -128,18 +132,22 @@ class braidOrbit {
 
 
  
-    async addNewPaper(hash, author, title, date, doi) {
+    async addNewPaper(hash, author, title, date, doi, version, field, tags, flags) {
         const existingPaper = this.getPaperByHash(hash)
         if (existingPaper) {
-            await this.updatePaperByHash(hash, author, title, date, doi)
+            await this.updatePaperByHash(hash, author, title, date, doi, version, field, tags, flags)
             return
         }
 
         const dbName = 'counter.' + hash.substr(20,20)
         const counter = await this.orbitdb.counter(dbName, this.defaultOptions)
 
-        const cid = await this.papers.put({ hash, author, title, date, doi,
-            counter: counter.id
+        const dbName = 'comments.' + hash.substr(20,20)
+        const comments = await this.orbitdb.comments(dbName, this.defaultOptions)
+
+        const cid = await this.papers.put({ hash, author, title, date, doi, version, field, tags, flags
+            counter: counter.id, 
+            comments: comments.id
         })
 
         return cid
@@ -156,6 +164,14 @@ class braidOrbit {
         await counter.load()
         const cid = await counter.inc()
         return cid
+    }
+
+    //May need to be rewritten, not sure if flat array is right
+
+    async getPaperComments (paper) {
+        const comments = await this.orbitdb.comments(paper.comments)
+        await comments.load()
+        return comments.reduce((flatComments, comments) => flatComments.concat(comments), this.comments.get)
     }
 
 
@@ -185,8 +201,25 @@ class braidOrbit {
         return this.papers.query((papers) => papers.doi === doi)
     }
 
+    getPaperByVersion(version) {
+        return this.papers.query((papers) => papers.version === version)
+    }
+
+    getPaperByField(field) {
+        return this.papers.query((papers) => papers.field === field)
+    }
+
+    getPaperByTags(tags) {
+        return this.papers.query((papers) => papers.tags === tags)
+    }
+
+    getPaperByFlags(flags) {
+        return this.papers.query((papers) => papers.flags === flags)
+    }
+
+
     async queryCatalog (queryFn) {
-        const dbAddrs = Object.values(this.cmopanions.all).map(peer => peer.papers)
+        const dbAddrs = Object.values(this.companions.all).map(peer => peer.papers)
 
         const allPapers = await Promise.all(dbAddrs.map(async (addr) => {
             const db = await this.orbitdb.open(addr)
@@ -195,15 +228,22 @@ class braidOrbit {
             return db.query(queryFn)
         }))
 
-        return allPapers.reduce((flatPapers, papers) => flatPapers.concat(papers), this.pieces.query(queryFn))
+        return allPapers.reduce((flatPapers, papers) => flatPapers.concat(papers), this.papers.query(queryFn))
     }
 
-    async updatePaperByHash (hash, author, title, date, doi) {
+    async updatePaperByHash (hash, author, title, date, doi, version, field, tags, comments, reviews, endorsements, flags) {
         const paper = await this.getPaperByHash(hash)
         paper.author = author
         paper.title = title
         paper.date = date
         paper.doi = doi
+        paper.version = version
+        paper.field = field
+        paper.tags = tags
+        paper.comments = comments
+        paper.reviews = reviews
+        paper.endorsements = endorsements
+        paper.flags = flags
         const cid = await this.paper.put(paper)
         return cid
     }
@@ -242,8 +282,8 @@ class braidOrbit {
 }
 
 try {
-    // const Ipfs = require('ipfs')
-    // const OrbitDB = require('orbit-db')
+    const Ipfs = require('ipfs')
+    const OrbitDB = require('orbit-db')
 
     module.exports = exports = new braidOrbit(Ipfs, OrbitDB)
 } catch (e) {
